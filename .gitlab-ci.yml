@@ -1,0 +1,27 @@
+stages:
+  - migrate
+
+migrate:
+  stage: migrate
+  image: rizqo46/migrate-cloud-sql-proxy:latest
+  variables:
+    MIGRATION_DB_URL: $MIGRATION_DB_URL # e.g: postgres://user:password@localhost:5432/dbname?sslmode=disable
+    DB_INSTANCE_NAME: $DB_INSTANCE_NAME # Cloud SQL instance name
+    GCP_SERVICE_KEY: $GCP_SERVICE_KEY
+  environment:
+    name: staging
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  when: manual
+  script:
+    # make service account key file
+    - echo $GCP_SERVICE_KEY > service-account-key.json
+
+    # connect using sql proxy
+    - cloud-sql-proxy -c service-account-key.json --quitquitquit $DB_INSTANCE_NAME & sleep 3
+
+    # migrate database && close sql proxy connection 
+    - migrate -path migrations -database "$MIGRATION_DB_URL" up && curl -X POST localhost:9091/quitquitquit
+    
+    # remove temporary service account key file
+    - rm -rf service-account-key.json
