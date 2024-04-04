@@ -1,0 +1,2 @@
+# About
+This project contains a Dockerfile to build a docker image that combines two binaries: migrate [migrate](https://github.com/golang-migrate/migrate) and [Cloud SQL Proxy](https://github.com/GoogleCloudPlatform/cloud-sql-proxy).
